@@ -5,9 +5,13 @@ export default function SignUp() {
   const [formData, setFormData] = useState({})
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // Hook from react-router-dom to navigate between routes
   const navigate = useNavigate();
   
+  //  Function to handle input change in the form
   const handleChange = (e) => {
+    //  Update form data with the new inpput value
     setFormData(
       {
         ...formData,
@@ -15,10 +19,12 @@ export default function SignUp() {
       });
   };
 
+  //  Function to handle form submission
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); //  Prevent default form submission behavior
     try{
-      setLoading(true);
+      setLoading(true); //  Set loading state to true
+      //  Make a POST request to the signup endpoint with form data
       const res = await fetch('/api/auth/signup', 
       {
         method: 'POST',
@@ -28,17 +34,22 @@ export default function SignUp() {
         body: JSON.stringify(formData),
       });
 
+      //  Parse the response as JSON
       const data = await res.json();
+
+      // If the signup was not successful, set error message and return
       if(data.success === false) {
         setError(data.message);
-        setLoading(false);
+        setLoading(false);  // Set loading state to false
         return;
       }
 
+      // If signup was successful, reset error, loading state, and navigate to sign-in page
       setLoading(false);
       setError(null);
       navigate('/sign-in');
     } catch (error) {
+      // If an error occurs during form submission, set error message and loading state
       setLoading(false);
       setError(error.message);
     }
