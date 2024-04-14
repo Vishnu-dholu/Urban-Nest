@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import {Link, useNavigate} from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux';
+import { signInStart, signInSuccess, signInFailure} from '../redux/user/userSlice';
 
 export default function SignIn() {
   const [formData, setFormData] = useState({})
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const { loading, error } = useSelector((state) => state.user);
 
   // Hook from react-router-dom to navigate between routes
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   
   //  Function to handle input change in the form
   const handleChange = (e) => {
@@ -23,7 +25,7 @@ export default function SignIn() {
   const handleSubmit = async (e) => {
     e.preventDefault(); //  Prevent default form submission behavior
     try{
-      setLoading(true); //  Set loading state to true
+      dispatch(signInStart());
       //  Make a POST request to the signup endpoint with form data
       const res = await fetch('/api/auth/signin', 
       {
@@ -39,19 +41,14 @@ export default function SignIn() {
 
       // If the signup was not successful, set error message and return
       if(data.success === false) {
-        setError(data.message);
-        setLoading(false);  // Set loading state to false
+        dispatch(signInFailure(data.message));
         return;
       }
 
-      // If signup was successful, reset error, loading state, and navigate to sign-in page
-      setLoading(false);
-      setError(null);
+      dispatch(signInSuccess(data));
       navigate('/');
     } catch (error) {
-      // If an error occurs during form submission, set error message and loading state
-      setLoading(false);
-      setError(error.message);
+      dispatch(signInFailure(error.message));
     }
   };
 
