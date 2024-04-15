@@ -9,6 +9,7 @@ router.post('/signup', signup);
 //Route for user sign-in
 router.post('/signin', signin);
 
+//Route for user google
 router.post('/google', google);
 
 export default router;

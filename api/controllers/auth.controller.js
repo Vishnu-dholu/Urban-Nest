@@ -53,25 +53,39 @@ export const signin = async (req, res, next) => {
     }
 };
 
+//  Define a function to handle Google authentication
 export const google = async (req, res, next) => {
     try {
+        //  Check if the user already exists in the database based on their email
         const user = await User.findOne({ email: req.body.email })
         if (user) {
+            //  if user exists, generate a JWT token for authentication
             const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+            //  Omit the password field from the user data
             const { password: pass, ...rest } = user._doc;
+            //  Set the token in a HTTP-only cookie and send user data in the response
             res
                 .cookie('access_token', token, { httpOnly: true })
                 .status(200)
                 .json(rest);
         } else {
+            //  If user does not exist, generate a random password and hash it
             const generatedPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
             const hashedPassword = bcryptjs.hashSync(generatedPassword, 10);
-            const newUser = new User({ username: req.body.name.split(" ").join("").toLowerCase()+Math.random().toString(36).slice(-4),
-             email: req.body.email, password: hashedPassword, avatar: req.body.photo });
-            
+            //  Create a new user with Google data and hashed password
+            const newUser = new User({ 
+                username: req.body.name.split(" ").join("").toLowerCase()+Math.random().toString(36).slice(-4),
+                email: req.body.email, 
+                password: hashedPassword, 
+                avatar: req.body.photo 
+            });
+            //  Save the new user to the database
              await newUser.save();
+             // Generate a JWT token for the new user
              const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
+             // Omit the password field from the new user data
              const { password: pass, ...rest } = newUser._doc;
+             // Set the token in a HTTP-only cookie and send user data in the response
              res.cookie('access_token', token, { httpOnly: true }).status(200).json(rest);
         }
     } catch (error) {
