@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {Link, useNavigate} from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux';
-import { signInStart, signInSuccess, signInFailure} from '../redux/user/userSlice';
+import { signInStart, signInSuccess, signInFailure, clearError} from '../redux/user/userSlice';
 import OAuth from '../components/OAuth';
 
 export default function SignIn() {
@@ -11,6 +11,13 @@ export default function SignIn() {
   // Hook from react-router-dom to navigate between routes
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    // Clear error when component unmounts
+    return () => {
+      dispatch(clearError());
+    };
+  }, [dispatch]);
   
   //  Function to handle input change in the form
   const handleChange = (e) => {
