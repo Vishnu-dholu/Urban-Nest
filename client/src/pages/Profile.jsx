@@ -104,20 +104,22 @@ export default function Profile() {
     }
   };
 
-  const handleSignOut = async (e) => {
+  const handleSignOut = async () => {
     try {
-      dispatch(signOutUserStart());
-      const res = await fetch('/api/user/signout');
+      dispatch(signOutUserStart()); // Dispatch action to indicate sign out start
+      const res = await fetch('/api/auth/signout');
       const data = await res.json();
-
-      if(data.success === false) {
-        dispatch(signOutUserFailure(error.message));
+  
+      if (data.success === false) {
+        dispatch(signOutUserFailure(data.message)); // Dispatch sign out failure action
+        return;
       }
-      dispatch(signOutUserSuccess(data));
+      dispatch(signOutUserSuccess()); // Dispatch sign out success action
     } catch (error) {
-      dispatch(signOutUserFailure(error.message));
+      dispatch(signOutUserFailure(error.message)); // Dispatch sign out failure action
     }
-  }
+  };
+  
 
   return (
     <div className='p-3 max-w-lg mx-auto'>
