@@ -6,10 +6,11 @@ import { updateUserStart, updateUserSuccess, updateUserFailure,
          deleteUserStart, deleteUserSuccess, deleteUserFailure,
          signOutUserStart, signOutUserSuccess, signOutUserFailure} from '../redux/user/userSlice';
 import { useDispatch } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 export default function Profile() {
   const fileRef = useRef(null)  //  Reference to file input element
-  const {currentUser, error} = useSelector((state) => state.user)  //  Current user data from Redux store
+  const {currentUser, error, loading} = useSelector((state) => state.user)  //  Current user data from Redux store
   const [file, setFile] = useState(); //  State for selected file
   const [filePerc, setFilePerc] = useState(0);  //  State for file upload progress
   const [fileUploadError, setFileUploadError] = useState(false);  //   State for file upload error
@@ -160,7 +161,11 @@ export default function Profile() {
          id='password' className='p-3 border rounded-lg'/>
 
          <button className='p-3 bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 disabled:opacity-80'
-         >update</button>
+          disabled={loading}>{loading ? 'Loading...' : 'Update'}</button>
+
+          <Link className='bg-green-700 text-white p-3 uppercase rounded-lg text-center hover:opacity-95' to={"/create-listing"}>
+            Create Listing
+          </Link>
       </form>
       <div className='flex justify-between mt-5'>
         <span onClick={handleDeleteUser}
