@@ -9,36 +9,36 @@ import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 export default function Profile() {
-  const fileRef = useRef(null)  //  Reference to file input element
-  const {currentUser, error, loading} = useSelector((state) => state.user)  //  Current user data from Redux store
-  const [file, setFile] = useState(); //  State for selected file
-  const [filePerc, setFilePerc] = useState(0);  //  State for file upload progress
-  const [fileUploadError, setFileUploadError] = useState(false);  //   State for file upload error
-  const [formData, setFormData] = useState({});   //  State for form data
+  const fileRef = useRef(null)  /* Reference to file input element */
+  const {currentUser, error, loading} = useSelector((state) => state.user)  /* Current user data from Redux store */
+  const [file, setFile] = useState(); /* State for selected file */
+  const [filePerc, setFilePerc] = useState(0);  /* State for file upload progress */
+  const [fileUploadError, setFileUploadError] = useState(false);  /* State for file upload error */
+  const [formData, setFormData] = useState({});   /* State for form data */
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const [showListingsError, setShowListingsError] = useState(false);
   const [userListings, setUserListings] = useState([]);
-  const dispatch = useDispatch(); //  Dispatch function for Redux actions
+  const dispatch = useDispatch(); /* Dispatch function for Redux actions */
 
-  //  Effect to handle file upload when 'file' state changes
+  /* Effect to handle file upload when 'file' state changes */
   useEffect(() => {
     if(file) {
       handleFileUpload();
     }
   }, [file]);
 
-  //  Function to handle file upload to Firebase Storage
+  /* Function to handle file upload to Firebase Storage */
   const handleFileUpload = () => {
     if (file) {
-        const storage = getStorage(app);  //  Firebase Storage instance
-        const fileName = new Date().getTime() + file.name;  //  Generate unique file name
-        const storageRef = ref(storage, fileName);  //  Reference to the file in Firebase Storage
-        const uploadTask = uploadBytesResumable(storageRef, file);  //  Upload task for the file 
+        const storage = getStorage(app);  /* Firebase Storage instance */
+        const fileName = new Date().getTime() + file.name;  /* Generate unique file name */
+        const storageRef = ref(storage, fileName);  /* Reference to the file in Firebase Storage */
+        const uploadTask = uploadBytesResumable(storageRef, file);  /* Upload task for the file */
 
-        //  Event listeners for upload task
+        /* Event listeners for upload task */
         uploadTask.on('state_changed',
             (snapshot) => {
-              //  Update file upload progress
+              /* Update file upload progress */
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                 setFilePerc(Math.round(progress));
             },
@@ -46,10 +46,10 @@ export default function Profile() {
                 setFileUploadError(true);
             },
             () => {
-              //  On upload completion, get the download URL of the uploaded file
+              /* On upload completion, get the download URL of the uploaded file */
               getDownloadURL(uploadTask.snapshot.ref).then
               ((downloadURL) => {
-                //  Update form data with the download URL of the uploaded file
+                /* Update form data with the download URL of the uploaded file */
                 setFormData({ ...formData, avatar: downloadURL });
               })
             }
@@ -57,72 +57,78 @@ export default function Profile() {
     }
 };
 
-  //  Function to handle form input change
+  /* Function to handle form input change */
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id] : e.target.value });
   }
-  //  Function to handle form submission
+  /* Function to handle form submission */
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      dispatch(updateUserStart());  //  Dispatch action to indicate user update start
+      dispatch(updateUserStart());  /* Dispatch action to indicate user update start */
       const res = await fetch(`/api/user/update/${currentUser._id}`,{
-        //  Send POST request to update user data
+        /* Send POST request to update user data */
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData), //  Send form data in JSON format
+        body: JSON.stringify(formData), /* Send form data in JSON format */
       });
-      const data = await res.json();  //  Parse response data
+      const data = await res.json();  /* Parse response data */
       if (data.success === false) {
-        //  If update fails, dispatch failue action
+        /* If update fails, dispatch failure action */
         dispatch(updateUserFailure(data.message));
         return;
       }
 
-      //  If update successful, dispatch success action
+      /* If update successful, dispatch success action */
       dispatch(updateUserSuccess(data));
     } catch (error) {
-      //  If an error occurs, dispatch failure action
+      /* If an error occurs, dispatch failure action */
       dispatch(updateUserFailure(error.message));
     }
   }
-  //  Function to handle deleting the user
+  /* Function to handle deleting the user */
   const handleDeleteUser = async (e) => {
     try {
-      dispatch(deleteUserStart());
+      dispatch(deleteUserStart());  /* Dispatch action to indicate user delete start */
       const res = await fetch(`/api/user/delete/${currentUser._id}`, {
         method: 'DELETE',
       });
-      const data = await res.json();
+      const data = await res.json();  /* Parse response data */
 
       if (data.success === false) {
+        /* If delete fails, dispatch failure action */
         dispatch(deleteUserFailure(data.message));
         return;
       }
+
+      /* If delete successful, dispatch success action */
       dispatch(deleteUserSuccess(data));
     } catch (error) {
+      /* If an error occurs, dispatch failure action */
       dispatch(deleteUserFailure(error.message));
     }
   };
 
+  /* Function to handle signing out the user */
   const handleSignOut = async () => {
     try {
-      dispatch(signOutUserStart()); // Dispatch action to indicate sign out start
+      dispatch(signOutUserStart()); /* Dispatch action to indicate sign out start */
       const res = await fetch('/api/auth/signout');
       const data = await res.json();
   
       if (data.success === false) {
-        dispatch(signOutUserFailure(data.message)); // Dispatch sign out failure action
+        dispatch(signOutUserFailure(data.message)); /* Dispatch sign out failure action */
         return;
       }
-      dispatch(signOutUserSuccess()); // Dispatch sign out success action
+      dispatch(signOutUserSuccess()); /* Dispatch sign out success action */
     } catch (error) {
-      dispatch(signOutUserFailure(error.message)); // Dispatch sign out failure action
+      dispatch(signOutUserFailure(error.message)); /* Dispatch sign out failure action */
     }
   };
   
+  /* Function to fetch and display user listings */
   const handleShowListings = async () => {
     try {
       setShowListingsError(false);
@@ -139,6 +145,7 @@ export default function Profile() {
     }
   };
 
+  /* Function to handle deleting a user's listing */
   const handleListingDelete = async (listingId) => {
     try {
       const res = await fetch(`/api/listing/delete/${listingId}`, {

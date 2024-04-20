@@ -4,17 +4,17 @@ import {
   getStorage,
   ref,
   uploadBytesResumable,
-} from "firebase/storage"; //  Importing Firebase storage functions
-import { app } from "../firebase"; //  Importing Firebase app instance
+} from "firebase/storage"; /* Importing Firebase storage functions */
+import { app } from "../firebase"; /* Importing Firebase app instance */
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 export default function CreateListing() {
-  const { currentUser } = useSelector((state) => state.user);
-  const navigate = useNavigate();
-  const [files, setFiles] = useState([]); //  State for storing uploaded files
+  const { currentUser } = useSelector((state) => state.user); /* Accessing current user from Redux store */
+  const navigate = useNavigate(); /* Accessing navigation function from React Router */
+  const [files, setFiles] = useState([]); /* State for storing uploaded files */
   const [formData, setFormData] = useState({
-    imageUrls: [], //  State for storing image URLs
+    imageUrls: [], /* State for storing image URLs */
     name: '',
     description: '',
     address: '',
@@ -27,88 +27,90 @@ export default function CreateListing() {
     parking: false,
     furnished: false,
   });
-  const [imageUploadError, setImageUploadError] = useState(false); //  State for image upload errors
-  const [uploading, setUploading] = useState(false); //  State for tracking upload progress
-  const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [imageUploadError, setImageUploadError] = useState(false); /* State for image upload errors */
+  const [uploading, setUploading] = useState(false); /* State for tracking upload progress */
+  const [error, setError] = useState(false);  /* State for general errors */
+  const [loading, setLoading] = useState(false);  /* State for tracking loading state */
 
-  //    Function to handle image submission
+  /* Function to handle image submission */
   const handleImageSubmit = (e) => {
-    //  Checking if files are selected and the total number of files is less than 7
+    /* Checking if files are selected and the total number of files is less than 7 */
     if (files.length > 0 && files.length + formData.imageUrls.length < 7) {
-      setUploading(true); //  Set uploading state to true
-      setImageUploadError(false); //  Reset image upload error state
-      const promises = []; //  Arrays to store promises for each file upload
+      setUploading(true); /* Set uploading state to true */
+      setImageUploadError(false); /* Reset image upload error state */
+      const promises = []; /* Arrays to store promises for each file upload */
 
-      //  Loop through each file and store its upload promise
+      /* Loop through each file and store its upload promise */
       for (let i = 0; i < files.length; i++) {
-        promises.push(storeImage(files[i])); //  Store upload promise for each file
+        promises.push(storeImage(files[i])); /* Store upload promise for each file */
       }
 
-      //    Execute all upload promises concurrently
+      /* Execute all upload promises concurrently */
       Promise.all(promises)
         .then((urls) => {
-          //  Once all uploads are completed, update form data with image URLs
+          /* Once all uploads are completed, update form data with image URLs*/
           setFormData({
             ...formData,
             imageUrls: formData.imageUrls.concat(urls),
           });
-          setImageUploadError(false); //  Reset image upload error state
-          setUploading(false); //  Set uploading state to false
+          setImageUploadError(false); /* Reset image upload error state */
+          setUploading(false); /* Set uploading state to false */
         })
         .catch((err) => {
-          // If any upload fails, handle the error
+          /* If any upload fails, handle the error */
           setImageUploadError("Image upload failed (2 mb max per image)");
-          setUploading(false); //  Set uploading state to false
+          setUploading(false); /* Set uploading state to false */
         });
     } else {
-      //  If no files are selected or the limit is exceeded, display error message
+      /* If no files are selected or the limit is exceeded, display error message */
       setImageUploadError("You can only upload 6 images per listing");
-      setUploading(false); //  Set uploading state to false
+      setUploading(false); /* Set uploading state to false */
     }
   };
 
-  //    Function to upload a single image to Firebase storage
+  /* Function to upload a single image to Firebase storage */
   const storeImage = async (file) => {
     return new Promise((resolve, reject) => {
-      const storage = getStorage(app); //  Get Firebase storage instance
-      const fileName = new Date().getTime() + file.name; //  Generate a unique file name
-      const storageRef = ref(storage, fileName); //  Create a reference to the storage location
-      const uploadTask = uploadBytesResumable(storageRef, file); //  Upload the file
+      const storage = getStorage(app); /* Get Firebase storage instance */
+      const fileName = new Date().getTime() + file.name; /* Generate a unique file name */
+      const storageRef = ref(storage, fileName); /* Create a reference to the storage location */
+      const uploadTask = uploadBytesResumable(storageRef, file); /*  Upload the file */
 
-      //    Event listener for tracking upload progress
+      /* Event listener for tracking upload progress */
       uploadTask.on(
         "state_changed",
         (snapshot) => {
-          //  Handle upload progress
+          /* Handle upload progress */
           const progress =
             (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
           console.log(`Upload is ${progress}% done`);
         },
         (error) => {
-          reject(error); //  Reject the promise with the error
+          reject(error); /* Reject the promise with the error */
         },
         () => {
-          //  Handle upload completion
+          /* Handle upload completion */
           getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-            //  Get the download URL of the uploaded file
-            resolve(downloadURL); //  Resolve the promise with the download URL
+            /* Get the download URL of the uploaded file */
+            resolve(downloadURL); /* Resolve the promise with the download URL */
           });
         }
       );
     });
   };
 
-  //    Function to remove an image from the form data
+  /* Function to remove an image from the form data */
   const handleRemoveImage = (index) => {
-    //  Filter out the image URL at the specified index
+    /* Filter out the image URL at the specified index */
     setFormData({
       ...formData,
       imageUrls: formData.imageUrls.filter((_, i) => i !== index),
     });
   };
 
+  /* Function to handle form input changes */
   const handleChange = (e) => {
+    /* Update form data based on input type and id */
     if (e.target.id === 'sale' || e.target.id === 'rent'){
         setFormData({
             ...formData,
@@ -139,17 +141,20 @@ export default function CreateListing() {
     }
   };
 
+  /* Function to handle form submission */
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log(formData);
     try {
+        /* Validate form data */
         if (formData.imageUrls.length < 1)
             return setError('You must upload at least one image');
         if (+ formData.regularPrice < +formData.discountPrice)
             return setError('Discount price must be lower than regular price');
-        setLoading(true);
-        setError(false);
+        setLoading(true); /* Set loading state to true */
+        setError(false);  /* Reset error state */
 
+        /* Send POST request to create listing */
         const res = await fetch('/api/listing/create', {
             method: 'POST',
             headers: {
@@ -157,18 +162,18 @@ export default function CreateListing() {
             },
             body: JSON.stringify({
                 ...formData,
-                userRef: currentUser._id,
+                userRef: currentUser._id, /* Attach current user ID to the listing data */
             })
         });
-        const data = await res.json();
-        setLoading(false);
+        const data = await res.json();  /* Parse response data */
+        setLoading(false);  /* Set loading state to false */
         if (data.success === false){
-            setError(data.message);
+            setError(data.message); /* Set error message if request fails */
         }
-        navigate(`/listing/${data._id}`);
+        navigate(`/listing/${data._id}`); /* Navigate to newly created listing page */
     } catch (error) {
-        setError(error.message);
-        setLoading(false);
+        setError(error.message);  /* Set error message if an error occurs */
+        setLoading(false); /* Set loading state to false */
     }
   }
   
@@ -206,6 +211,7 @@ export default function CreateListing() {
             onChange={handleChange}
             value={formData.address}
           />
+          {/* Checkbox inputs for listing type, features and offer */}
           <div className="flex gap-6 flex-wrap">
             <div className="flex gap-2">
               <input type="checkbox" id="sale" className="w-5" onChange={handleChange} checked={formData.type === 'sale'} />
@@ -228,6 +234,7 @@ export default function CreateListing() {
               <span>Offer</span>
             </div>
           </div>
+          {/* Number input fields for bedrooms, bathrooms, regular price and discount price */}
           <div className="flex flex-wrap gap-6">
             <div className="flex items-center gap-2">
               <input
@@ -294,6 +301,7 @@ export default function CreateListing() {
           </div>
         </div>
         <div className="flex flex-col flex-1 gap-4">
+          {/* File input for uploading images */}
           <p className="font-semibold">
             Images:
             <span className="font-normal text-gray-600 ml-2">
@@ -318,6 +326,7 @@ export default function CreateListing() {
               {uploading ? "Uploading..." : "Upload"}
             </button>
           </div>
+          {/* Display image upload error */}
           <p className="text-red-700 text-sm">
             {imageUploadError && imageUploadError}
           </p>
@@ -341,10 +350,12 @@ export default function CreateListing() {
                 </button>
               </div>
             ))}
+            {/* Submit button */}
           <button onClick={handleSubmit} disabled={loading || uploading}
            className="p-3 bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 disabled:opacity-80">
             {loading ? 'Creating...' : 'Create listing'}
           </button>
+          {/* Display general error message */}
           {error && <p className="text-sm text-red-700">{error}</p>}
         </div>
       </form>

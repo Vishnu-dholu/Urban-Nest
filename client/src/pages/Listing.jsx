@@ -3,49 +3,51 @@ import { useParams } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import SwiperCore from 'swiper';
 import { Navigation } from 'swiper/modules';
-import 'swiper/css/bundle';
+import 'swiper/css/bundle'; //  Import Swiper styles
 import {FaBath, FaBed, FaChair, FaMapMarkedAlt, FaMapMarkerAlt, FaParking, FaShare} from 'react-icons/fa';
-import { list } from 'firebase/storage';
 
-export default function Listing() {
-    SwiperCore.use([Navigation]);
-    const [listing, setListing] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(false);
-    const [copied, setCopied] = useState(false);
-    const params = useParams();
+export default function Listing() {  /* Initialize Swiper with navigation module */
+    const [listing, setListing] = useState(null);   /* State for storing listing data */
+    const [loading, setLoading] = useState(false);  /* State for loading status */
+    const [error, setError] = useState(false);  /* State for error status */
+    const [copied, setCopied] = useState(false);    /* State for tracking copied link status */
+    const params = useParams(); /* Get route parameters */
 
     useEffect(() => {
+        /* Fetch listing data when component mounts or route change */
         const fetchListing = async () => {
             try {
-                setLoading(true);
-                const res = await fetch(`/api/listing/get/${params.listingId}`);
-                const data = await res.json();
+                setLoading(true);   /* Set loading status to true */
+                const res = await fetch(`/api/listing/get/${params.listingId}`);    /* Fetch listing data from API */
+                const data = await res.json();  /* Parse response data as JSON */
                 if (data.success === false){
-                    setError(true);
-                    setLoading(false);
+                    setError(true); /* Set error status if API request fails */
+                    setLoading(false);  /* Set loading status to false */
                     return;
                 }
-                setListing(data);
-                setError(false);
-                setLoading(false);
+                setListing(data);   /* Set listing data in state */
+                setError(false);    /* Reset error status */
+                setLoading(false);  /* Set loading status to false */
             } catch (error) {
-                setError(true);
-                setLoading(false);
+                setError(true); /* Set error status if an error occurs during API request */
+                setLoading(false);  /* Set loading status to false */
             }
         };
 
-        fetchListing();
-    }, [params.listingId]);
+        fetchListing(); /* Call fetchListing function */
+    }, [params.listingId]); /* Dependency array to re-run effect when params.listingId changes */
   return (
     <main>
+        {/* Conditional rendering rendering based on loading and error states */}
         {loading && <p className="text-center my-7 text-2xl">Loading...</p>}
         {error &&(
             <p className="text-center my-7 text-2xl">Something went wrong!</p>
         )}
 
+        {/* Rendering listing data if available and no loading/error */}
         {listing && !loading && !error && (
             <div>
+                {/* Swiper component for image slideshow */}
                 <Swiper navigation loop={true}>
                     {listing.imageUrls.map((url) => (
                         <SwiperSlide key={url}>
@@ -59,6 +61,7 @@ export default function Listing() {
                     ))}
                 </Swiper>
 
+                {/* Share button to copy listing URL */}
                 <div className='fixed top-[13%] right-[3%] z-10 border rounded-full w-12 h-12 flex justify-center items-center bg-slate-100 cursor-pointer'>
                     <FaShare className='text-slate-500'
                      onClick={() => {
@@ -71,11 +74,14 @@ export default function Listing() {
                      />
                 </div>
 
+                {/* Display "Link copied!" message if link is copied */}
                 {copied && (
                     <p className='fixed top-[23%] right-[5%] z-10 rounded-md bg-slate-100 p-2'>
                         Link copied!
                     </p>
                 )}
+
+                {/* Listing details */}
                 <div className='flex flex-col max-w-4xl mx-auto p-3 my-7 gap-4'>
                     <p className='text-2xl font-semibold'>
                         {listing.name} - ₹{' '}

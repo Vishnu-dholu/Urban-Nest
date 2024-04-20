@@ -4,8 +4,8 @@ import {
   getStorage,
   ref,
   uploadBytesResumable,
-} from "firebase/storage"; //  Importing Firebase storage functions
-import { app } from "../firebase"; //  Importing Firebase app instance
+} from "firebase/storage"; /* Importing Firebase storage functions */
+import { app } from "../firebase"; /* Importing Firebase app instance */
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -13,9 +13,9 @@ export default function CreateListing() {
   const { currentUser } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const params = useParams();
-  const [files, setFiles] = useState([]); //  State for storing uploaded files
+  const [files, setFiles] = useState([]); /* State for storing uploaded files */
   const [formData, setFormData] = useState({
-    imageUrls: [], //  State for storing image URLs
+    imageUrls: [], /* State for storing image URLs */
     name: '',
     description: '',
     address: '',
@@ -28,8 +28,8 @@ export default function CreateListing() {
     parking: false,
     furnished: false,
   });
-  const [imageUploadError, setImageUploadError] = useState(false); //  State for image upload errors
-  const [uploading, setUploading] = useState(false); //  State for tracking upload progress
+  const [imageUploadError, setImageUploadError] = useState(false); /* State for image upload errors */
+  const [uploading, setUploading] = useState(false); /* State for tracking upload progress */
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
 

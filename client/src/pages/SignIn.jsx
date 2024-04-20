@@ -8,20 +8,20 @@ export default function SignIn() {
   const [formData, setFormData] = useState({})
   const { loading, error } = useSelector((state) => state.user);
 
-  // Hook from react-router-dom to navigate between routes
+  /* Hook from react-router-dom to navigate between routes */
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // Clear error when component unmounts
+    /* Clear error when component unmounts */
     return () => {
       dispatch(clearError());
     };
   }, [dispatch]);
   
-  //  Function to handle input change in the form
+  /* Function to handle input change in the form */
   const handleChange = (e) => {
-    //  Update form data with the new inpput value
+    /* Update form data with the new input value */
     setFormData(
       {
         ...formData,
@@ -29,12 +29,12 @@ export default function SignIn() {
       });
   };
 
-  //  Function to handle form submission
+  /* Function to handle form submission */
   const handleSubmit = async (e) => {
-    e.preventDefault(); //  Prevent default form submission behavior
+    e.preventDefault(); /* Prevent default form submission behavior */
     try{
       dispatch(signInStart());
-      //  Make a POST request to the signup endpoint with form data
+      /* Make a POST request to the signup endpoint with form data */
       const res = await fetch('/api/auth/signin', 
       {
         method: 'POST',
@@ -44,10 +44,10 @@ export default function SignIn() {
         body: JSON.stringify(formData),
       });
 
-      //  Parse the response as JSON
+      /* Parse the response as JSON */
       const data = await res.json();
 
-      // If the signup was not successful, set error message and return
+      /* If the signup was not successful, set error message and return */
       if(data.success === false) {
         dispatch(signInFailure(data.message));
         return;
