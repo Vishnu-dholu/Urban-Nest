@@ -1,5 +1,5 @@
 import express from 'express';
-import { deleteUser, test, updateUser, getUserListings } from '../controllers/user.controller.js';
+import { deleteUser, test, updateUser, getUserListings, getUser } from '../controllers/user.controller.js';
 import { verifyToken } from '../utils/verifyUser.js';
 
 const router = express.Router();
@@ -15,5 +15,7 @@ router.delete('/delete/:id', verifyToken, deleteUser);
 
 //  Route for getting listings associated with a user
 router.get('/listing/:id', verifyToken, getUserListings)
+
+router.get('/:id', verifyToken, getUser)
 
 export default router;

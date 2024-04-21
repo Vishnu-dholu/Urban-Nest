@@ -85,16 +85,16 @@ export const getUser = async (req, res, next) => {
         //  Find user document by ID
         const user = await User.findById(req.params.id);
 
-        //  If user document not found, send eror
+        //  If user document not found, send error
         if(!user) return next(errorHandler(404, 'User not found!'));
 
         //  Remove password field from user document
-        const { password: pass, ...rest } = user._id
+        const { password: pass, ...rest } = user._doc;
 
         //  Send user information in the response
         res.status(200).json(rest);
 
     } catch (error) {
-        next(error)
+        next(error);
     }
-}
+};

@@ -2,17 +2,22 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import SwiperCore from 'swiper';
+import { useSelector } from 'react-redux';
 import { Navigation } from 'swiper/modules';
 import 'swiper/css/bundle'; //  Import Swiper styles
 import {FaBath, FaBed, FaChair, FaMapMarkedAlt, FaMapMarkerAlt, FaParking, FaShare} from 'react-icons/fa';
+import Contact from '../components/Contact';
+import { disconnect } from 'mongoose';
 
 export default function Listing() {  /* Initialize Swiper with navigation module */
     const [listing, setListing] = useState(null);   /* State for storing listing data */
     const [loading, setLoading] = useState(false);  /* State for loading status */
     const [error, setError] = useState(false);  /* State for error status */
-    const [copied, setCopied] = useState(false);    /* State for tracking copied link status */
+    const [copied, setCopied] = useState(false);
+    const [contact, setContact] = useState(false);    /* State for tracking copied link status */
     const params = useParams(); /* Get route parameters */
-
+    const {currentUser} = useSelector((state) => state.user);
+    
     useEffect(() => {
         /* Fetch listing data when component mounts or route change */
         const fetchListing = async () => {
@@ -33,7 +38,7 @@ export default function Listing() {  /* Initialize Swiper with navigation module
                 setLoading(false);  /* Set loading status to false */
             }
         };
-
+        
         fetchListing(); /* Call fetchListing function */
     }, [params.listingId]); /* Dependency array to re-run effect when params.listingId changes */
   return (
@@ -45,7 +50,7 @@ export default function Listing() {  /* Initialize Swiper with navigation module
         )}
 
         {/* Rendering listing data if available and no loading/error */}
-        {listing && !loading && !error && (
+        {listing && (
             <div>
                 {/* Swiper component for image slideshow */}
                 <Swiper navigation loop={true}>
@@ -101,7 +106,8 @@ export default function Listing() {  /* Initialize Swiper with navigation module
 
                         {listing.offer && (
                             <p className='bg-green-900 w-full max-w-[200px] text-white text-center p-1 rounded-md'>
-                                ${+listing.regularPrice - +listing.discountPrice}
+                                ₹{+listing.regularPrice - +listing.discountPrice}
+                                {listing.type = ' discount'}
                             </p>
                         )}
                     </div>
@@ -131,6 +137,12 @@ export default function Listing() {  /* Initialize Swiper with navigation module
                             {listing.furnished ? 'Furnished' : 'Unfurnished'}
                         </li>
                     </ul>
+                    {currentUser && listing.userRef !== currentUser._id && !contact && (
+                    <button onClick={()=>setContact(true)} className='bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 p-3'>
+                        Contact landlord
+                    </button>
+                    )}
+                    {contact && <Contact listing={listing}/>}
                 </div>
             </div>
         )}
